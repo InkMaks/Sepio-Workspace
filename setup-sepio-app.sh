@@ -161,6 +161,7 @@ install_packages figlet
 install_packages lolcat
 install_packages git
 install_packages jq
+install_packages expect
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 SEPIO_APP_DIR="$SCRIPT_DIR/Sepio-App"
@@ -259,19 +260,10 @@ fi
 #cd $SEPIO_APP_DIR/backend
 #node CreateUser.js
 
-if ! command -v mysql &> /dev/null; then
-    log "MySQL client is not installed. Installing..."
-    sudo apt-get update && sudo apt-get install -y mysql-client
-    if [ $? -ne 0 ]; then
-        log "Error: Failed to install MySQL client."
-        exit 1
-    fi
-fi
-
 create_mysql_cnf
 
-execute_mysql_command "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 'root' WITH GRANT OPTION;"
-
+execute_mysql_command "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
+execute_mysql_command "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;"
 execute_mysql_command "FLUSH PRIVILEGES;"
 
 execute_mysql_command "CREATE DATABASE IF NOT EXISTS nodejs_login;"
