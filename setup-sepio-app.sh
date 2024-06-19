@@ -261,9 +261,23 @@ else
     exit 1
 fi
 
-log "Creating DB User..."
-cd $SEPIO_APP_DIR/backend
-node CreateUser.js
+log "Creating MySQL user Main_user with password Sepio_password..."
+sudo mysql -u root <<MYSQL_SCRIPT
+CREATE USER 'Main_user'@'localhost' IDENTIFIED BY 'Sepio_password';
+GRANT ALL PRIVILEGES ON *.* TO 'Main_user'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+MYSQL_SCRIPT
+
+if [ $? -ne 0 ]; then
+    log "Error: Failed to create MySQL user Main_user."
+    exit 1
+fi
+
+log "MySQL user Main_user created successfully."
+
+#log "Creating DB User..."
+#cd $SEPIO_APP_DIR/backend
+#node CreateUser.js
 
 
 #execute_mysql_command "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
