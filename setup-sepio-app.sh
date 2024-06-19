@@ -276,9 +276,9 @@ fi
 
 log "MySQL user Main_user created successfully."
 
-#log "Creating DB User..."
-#cd $SEPIO_APP_DIR/backend
-#node CreateUser.js
+log "Creating DB User..."
+cd $SEPIO_APP_DIR/backend
+node CreateUser.js
 
 
 #execute_mysql_command "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
