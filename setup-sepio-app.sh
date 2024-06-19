@@ -46,6 +46,18 @@ install_packages() {
     fi
 }
 
+install_nvm() {
+    if ! command -v nvm &> /dev/null; then
+        log "nvm (Node Version Manager) is not installed. Installing nvm..."
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        log "nvm installed successfully."
+    else
+        log "nvm is already installed."
+    fi
+}
+
 schedule_updater() {
     local script_path=$(realpath "$SCRIPT_DIR/Sepio_Updater.sh")
     local cron_job="0 3 * * * $script_path >> /var/log/sepio_updater.log 2>&1"
@@ -139,6 +151,8 @@ SEPIO_APP_DIR="$SCRIPT_DIR/Sepio-App"
 
 install_frontend_dependencies "$SEPIO_APP_DIR/front-end"
 install_backend_dependencies "$SEPIO_APP_DIR/backend"
+
+install_nvm
 
 log "Checking for required Node.js versions from package.json files..."
 backend_node_version=$(get_required_node_version "$SEPIO_APP_DIR/backend/package.json")
