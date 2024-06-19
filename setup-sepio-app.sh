@@ -266,6 +266,10 @@ sudo mysql -u root <<MYSQL_SCRIPT
 CREATE USER 'Main_user'@'localhost' IDENTIFIED BY 'Sepio_password';
 GRANT ALL PRIVILEGES ON *.* TO 'Main_user'@'localhost' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
+CREATE DATABASE IF NOT EXISTS nodejs_login;
+USE nodejs_login;
+GRANT ALL PRIVILEGES ON nodejs_login.* TO 'Main_user'@'localhost';
+FLUSH PRIVILEGES;
 MYSQL_SCRIPT
 
 if [ $? -ne 0 ]; then
