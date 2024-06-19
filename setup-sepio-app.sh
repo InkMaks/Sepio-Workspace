@@ -218,18 +218,28 @@ fi
 log "Securing MySQL installation..."
 sudo expect -c "
 spawn mysql_secure_installation
-expect \"Press y|Y for Yes, any other key for No:\"
-send \"Y\r\"
-expect \"Remove anonymous users?\"
-send \"Y\r\"
-expect \"Disallow root login remotely?\"
-send \"Y\r\"
-expect \"Remove test database and access to it?\"
-send \"Y\r\"
-expect \"Reload privilege tables now?\"
-send \"Y\r\"
+expect "VALIDATE PASSWORD COMPONENT?" {
+    send -- "Y\r"
+    expect "There are three levels of password validation policy:"
+    send -- "1\r"  # Choose MEDIUM (or 2 for STRONG if needed)
+}
+
+expect "Remove anonymous users?" {
+    send -- "Y\r"
+}
+
+expect "Disallow root login remotely?" {
+    send -- "Y\r"
+}
+
+expect "Remove test database and access to it?" {
+    send -- "Y\r"
+}
+
+expect "Reload privilege tables now?" {
+    send -- "Y\r"
+}
 expect eof
-"
 "
 
 log "Starting MySQL service..."
