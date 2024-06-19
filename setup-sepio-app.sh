@@ -263,6 +263,7 @@ fi
 
 log "Creating MySQL user Main_user with password Sepio_password..."
 sudo mysql -u root <<MYSQL_SCRIPT
+SET GLOBAL validate_password.policy = 0;
 CREATE USER 'Main_user'@'localhost' IDENTIFIED BY 'Sepio_password';
 GRANT ALL PRIVILEGES ON *.* TO 'Main_user'@'localhost' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
