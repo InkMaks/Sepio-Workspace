@@ -58,6 +58,22 @@ install_nvm() {
     fi
 }
 
+
+install_npm() {
+    if ! command -v npm &> /dev/null; then
+        log "npm is not installed. Installing npm..."
+        sudo apt-get update && sudo apt-get install -y npm
+        if [ $? -ne 0 ]; then
+            log "Error: Failed to install npm."
+            exit 1
+        fi
+        log "npm installed successfully."
+    else
+        log "npm is already installed."
+    fi
+}
+
+
 schedule_updater() {
     local script_path=$(realpath "$SCRIPT_DIR/Sepio_Updater.sh")
     local cron_job="0 3 * * * $script_path >> /var/log/sepio_updater.log 2>&1"
@@ -149,6 +165,8 @@ install_packages jq
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 SEPIO_APP_DIR="$SCRIPT_DIR/Sepio-App"
 
+log "Installing npm and deps..."
+install_npm
 install_frontend_dependencies "$SEPIO_APP_DIR/front-end"
 install_backend_dependencies "$SEPIO_APP_DIR/backend"
 
