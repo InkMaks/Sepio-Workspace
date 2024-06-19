@@ -261,23 +261,22 @@ else
     exit 1
 fi
 
-#log "Creating DB User..."
-#cd $SEPIO_APP_DIR/backend
-#node CreateUser.js
+log "Creating DB User..."
+cd $SEPIO_APP_DIR/backend
+node CreateUser.js
 
-create_mysql_cnf
 
-execute_mysql_command "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
-execute_mysql_command "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;"
-execute_mysql_command "FLUSH PRIVILEGES;"
+#execute_mysql_command "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
+#execute_mysql_command "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;"
+#execute_mysql_command "FLUSH PRIVILEGES;"
 
-execute_mysql_command "CREATE DATABASE IF NOT EXISTS nodejs_login;"
+#execute_mysql_command "CREATE DATABASE IF NOT EXISTS nodejs_login;"
 
-execute_mysql_command "ALTER USER 'Main_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Sepio_password';"
+#execute_mysql_command "ALTER USER 'Main_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Sepio_password';"
 
-execute_mysql_command "GRANT ALL PRIVILEGES ON nodejs_login.* TO 'Main_user'@'localhost';"
+#execute_mysql_command "GRANT ALL PRIVILEGES ON nodejs_login.* TO 'Main_user'@'localhost';"
 
-execute_mysql_command "FLUSH PRIVILEGES;"
+#execute_mysql_command "FLUSH PRIVILEGES;"
 
 log "Database created, user modified, and privileges granted successfully."
 
