@@ -260,6 +260,7 @@ else
     log "Error: MySQL is not running on port 3306."
     exit 1
 fi
+
 #SET GLOBAL validate_password.policy = 0;
 log "Creating MySQL user Main_user with password Sepio_password..."
 sudo mysql -u root <<MYSQL_SCRIPT
