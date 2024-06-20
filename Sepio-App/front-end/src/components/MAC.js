@@ -344,7 +344,7 @@ export default function Layout({icon_username}) {
             )}
 
             {foundMacAddresses.length > 0 && (
-                <div style={{  marginLeft: marginLeft, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '100%', marginLeft: '100px' }}>
+                <div style={{  marginLeft: marginLeft, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px', width: '100%', marginLeft: '90px' }}>
                     <div style = {{
                         display: 'flex',
                         flexDirection: 'column',

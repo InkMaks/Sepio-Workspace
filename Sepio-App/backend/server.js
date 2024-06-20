@@ -1003,7 +1003,7 @@ app.post('/verify', async (req, res) => {
     if (verified) {
       console.log(`Token verified for user: ${username}`);
       await prisma.user.update({
-        where: { name: username },
+        where: {name: username},
         data: { otp_verified: true },
       });
       res.json({ verified: true });
