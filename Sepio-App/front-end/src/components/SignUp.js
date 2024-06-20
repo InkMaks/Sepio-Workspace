@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import Input from '@mui/joy/Input';
 import Button from '@mui/joy/Button';
+import SepioLogo from './../image/Sepio_Logo.png';
 import axios from 'axios';
 
 export default function SignUp() {
@@ -28,12 +28,18 @@ export default function SignUp() {
       });
   };
 
+  const handleLoginRedirect = () => {
+    navigate('/login');
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#778899', padding: '40px', borderRadius: '10px', maxWidth: '400px', margin: 'auto', marginTop: '100px' }}>
+      <img src={SepioLogo} alt="Welcome" style={{ marginBottom: '20px', height: 70 }} />
       <form onSubmit={handleSubmit}>
         <FormControl>
           <FormLabel>Username</FormLabel>
           <Input
+          placeholder = "Username"
             type="text"
             required
             value={formData.username}
@@ -41,6 +47,7 @@ export default function SignUp() {
           />
           <FormLabel>Password</FormLabel>
           <Input
+          placeholder = "Password"
             type="password"
             required
             value={formData.password}
@@ -59,6 +66,14 @@ export default function SignUp() {
           )}
         </FormControl>
       </form>
+      <Button
+      variant = 'solid'
+      color = 'secondary'
+      sx = {{marginTop: '20px'}}
+      onClick = {handleLoginRedirect}
+      >
+        Log In
+      </Button>
     </div>
   );
 }

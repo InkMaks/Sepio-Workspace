@@ -57,7 +57,7 @@ export default function InputSubscription({ setUsername }) {
               onChange={(event) => setData({ ...data, password: event.target.value, status: 'initial' })}
               error={data.status === 'failure'}
             />
-            <Button variant="solid" color="primary" type="submit">
+            <Button variant="solid" color="primary" type="submit" style = {{marginTop: '22px'}}>
               Log in
             </Button>
             {data.status === 'failure' && (
