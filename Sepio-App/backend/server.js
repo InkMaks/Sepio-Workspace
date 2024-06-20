@@ -918,7 +918,7 @@ app.post('/signup', async (req, res) => {
 });
 
 
-//Check credentials 
+//Check credentials
 app.post('/authenticate', async (req, res) => {
   const { username, password } = req.body;
   console.log(`Authenticating user: ${username}`);
@@ -1057,26 +1057,36 @@ app.get('/get-sepio-source', async (req, res) => {
 // var sepioEndpoint = "sepio-hac-1-ng.sepiocyber.com";
 
 app.post('/check-connection', async (req, res) => {
-  const { serviceNowInstance, username, password } = req.body;
-  serviceNowCredentials = { serviceNowInstance, username, password };
+  const {serviceNowInstance, username, password} = req.body;
+  serviceNowCredentials = {serviceNowInstance, username, password};
 
-  try {
-    const response = await axios.get(`https://${serviceNowInstance}`, {
+
+  try{
+    const responce = await axios.get(`https://${serviceNowInstance}/api/now/table/incident`,{
       auth: {
         username,
         password
       }
     });
 
-    if (response.status === 200) {
-      res.json({ success: true, message: 'Connection successful!' });
-    } else {
-      res.status(500).json({ success: false, message: 'Connection failed!' });
+    if(responce.status === 200){
+      res.json({success: true, message: 'Connection successful'});
+      
+    }else{
+      res.status(responce.status).json({success: false, message: 'Connection faild'})
     }
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Connection failed!', error: error.message });
+
+  }catch(error){
+    if(error.responce && error.response.status === 401){
+      res.status(401).json({success: false, message: 'Authentication failed: Invalid username or password'});
+    }else if (error.responce && error.responce.status === 404) {
+     res.status(404).json({success: false, message: 'Service Now connection failed invalid instance.' });
+    } else {
+      res.status(500).json({success: false, message: 'Connection failed'});
+    }
+
   }
-});
+})
 
 app.post('/check-sepio-connection', async (req, res) => {
   let { sepioEndpoint, sepioUsername, sepioPassword } = req.body;
