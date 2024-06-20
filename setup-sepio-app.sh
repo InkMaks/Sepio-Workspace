@@ -263,13 +263,20 @@ fi
 #SET GLOBAL validate_password.policy = 0;
 log "Creating MySQL user Main_user with password Sepio_password..."
 sudo mysql -u root <<MYSQL_SCRIPT
-CREATE USER 'Main_user'@'localhost' IDENTIFIED BY 'Sepio_password';
-GRANT ALL PRIVILEGES ON *.* TO 'Main_user'@'localhost' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
 CREATE DATABASE IF NOT EXISTS nodejs_login;
 USE nodejs_login;
+
+CREATE USER 'Main_user'@'localhost' IDENTIFIED BY 'Sepio_password';
 GRANT ALL PRIVILEGES ON nodejs_login.* TO 'Main_user'@'localhost';
 FLUSH PRIVILEGES;
+
+CREATE TABLE IF NOT EXISTS user (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    otp_secret VARCHAR(255),
+    otp_verified BOOLEAN DEFAULT FALSE
+);
 MYSQL_SCRIPT
 
 if [ $? -ne 0 ]; then

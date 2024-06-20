@@ -15,7 +15,7 @@ async function createUser() {
   //await prisma.$executeRaw`GRANT ALL PRIVILEGES ON nodejs_login.* TO 'Main_user'@'localhost';`;
   //await prisma.$executeRaw`FLUSH PRIVILEGES;`;
 
-  console.log('User created and privileges granted successfully.');
+  console.log('Connection Succesful!');
 } catch (e) {
   console.error('Error creating user:', e);
   process.exit(1);
