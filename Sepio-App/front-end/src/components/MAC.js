@@ -1500,7 +1500,7 @@ export default function Layout({ icon_username }) {
 
     const end = (
         <div className='flex align-items-center gap-2'>
-            <NavLink to='/' className='p-button p-component p-button-text' style={{ borderRadius: '10px', padding: '10px' }}>
+            <NavLink to='/' className='p-button p-component p-button-text  text-decoration-none' style={{ borderRadius: '10px', padding: '10px' }}>
                 <span className='pi pi-sign-out' style={{ marginRight: '5px' }} />
                 Logout
             </NavLink>
