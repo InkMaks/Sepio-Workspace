@@ -1415,7 +1415,12 @@ export default function Layout({ icon_username }) {
 
             const macAddresses = searchQuery.split(',').map(mac => mac.trim());
 
-            const response = await axios.post('/api/check-mac', { macAddress: macAddresses });
+            const requestBody = {
+                "macAddress": macAddresses, 
+                "isClientFormatRequired": true
+            }
+
+            const response = await axios.post('/api/check-mac', requestBody);
 
             if (response.status === 400) {
                 console.log("post response from server > " + response.data.message);
