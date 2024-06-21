@@ -13,12 +13,7 @@
   }
 } 
 
- /* .sepio {
-  display: flex;
-  height:100vh; 
-  background-image: url('image/NIST-Cybersecurity.jpg');
-  background-size: cover;
-}   */
+
 
 .App-header {
   background-color: #282c34;
@@ -48,7 +43,6 @@
 body {
   overflow-x: hidden;
 }
-
 
 
 

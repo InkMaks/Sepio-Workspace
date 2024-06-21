@@ -169,6 +169,7 @@ export default function Layout({icon_username}) {
   const [sepioMessage, setSepioMessage] = useState('');
   const [inputWidth, setInputWidth] = useState('100%'); // Initial width for larger screens
   const [marginLeft, setMarginLeft] = useState('auto');
+  const [isScrollDisabled, setIsScrollDisabled] = useState(true);
   const toast = React.useRef(null);
 
   const navigate = useNavigate();
@@ -204,6 +205,18 @@ export default function Layout({icon_username}) {
   useEffect(() => {
     fetchData();
   }, [location]);
+
+  useEffect(() => {
+    if(isScrollDisabled){
+      document.body.style.overflow = 'hidden';
+    }else{
+      document.body.style.overflow = 'auto';
+    }
+      return () => {
+        document.body.style.overflow = 'auto';
+      };
+    
+  }, [isScrollDisabled]);
 
   const handleStartClick = () => {
     navigate('/querytool');
@@ -346,7 +359,7 @@ export default function Layout({icon_username}) {
       <Menubar start={start} end={end} />
 
       <div style={{ display: 'flex', flex: '1' }}>
-        <CSidebar className='border-end custom-sidebar' visible={true} style={{ height: '100vh', position: 'sticky', top: '0' }}>
+        <CSidebar className='border-end custom-sidebar' visible={true} style={{ height: '100vh', position: 'sticky', top: '0'}}>
           <CSidebarNav>
             <CContainer fluid>
             </CContainer>
