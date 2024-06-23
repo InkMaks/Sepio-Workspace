@@ -1185,7 +1185,7 @@ const addTagsToSepioElements = async (sepioToken, snEndpoint, filteredMacs, mac)
       tagsList = filteredMacs.map(result => (result.sys_class_name));
       tagsList.push("in_cmdb");
     } else {
-      tagsList.push("not_incmdb");
+      tagsList.push("NOT_INCMDB");
     }
     console.log("An attemt to add tags to Sepio elements");
 
