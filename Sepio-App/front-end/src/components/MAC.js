@@ -1358,7 +1358,6 @@
 
 
 
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Menubar } from 'primereact/menubar';
 import { Menu } from 'primereact/menu';
@@ -1374,6 +1373,7 @@ import { Column } from 'primereact/column';
 import axios from 'axios';
 import SepioLogo from './../image/Sepio_Logo.png';
 import { Toast } from 'primereact/toast';
+import { InputSwitch } from 'primereact/inputswitch';
 
 export default function Layout({ icon_username }) {
     const navigate = useNavigate();
@@ -1383,6 +1383,7 @@ export default function Layout({ icon_username }) {
     const [inputWidth, setInputWidth] = useState('300px'); // Initial width for the input field
     const [marginLeft, setMarginLeft] = useState('auto');
     const [isScrollDisabled, setIsScrollDisabled] = useState(true); // State to control scrolling
+    const [isValidationEnabled, setIsValidationEnabled] = useState(true); // State for validation switch
     const toast = useRef(null);
 
     const handleLogout = () => {
@@ -1393,8 +1394,17 @@ export default function Layout({ icon_username }) {
         navigate('/querytool');
     };
 
+    const showInfo = (message) => {
+        toast.current.show({severity: 'info', summary: 'Info', detail: message, life: 3000});
+    } 
+
     const showError = (message) => {
         toast.current.show({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
+    };
+
+    const isValidMacAddress = (mac) => {
+        const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^[0-9A-Fa-f]{12}$/;
+        return macRegex.test(mac);
     };
 
     const handlePostMac = async () => {
@@ -1414,6 +1424,15 @@ export default function Layout({ icon_username }) {
             };
 
             const macAddresses = searchQuery.split(',').map(mac => mac.trim());
+
+            if (isValidationEnabled) {
+                for (let mac of macAddresses) {
+                    if (!isValidMacAddress(mac)) {
+                        showInfo(`Invalid MAC address format: ${mac}`);
+                        // Exit if any MAC address is invalid
+                    }
+                }
+            }
 
             const requestBody = {
                 "macAddress": macAddresses, 
@@ -1572,6 +1591,11 @@ export default function Layout({ icon_username }) {
                 />
             </div>
 
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-900px', marginBottom: '20px' }}>
+                <label htmlFor="validationSwitch" style={{ marginRight: '10px' }}>MAC Address Validation:</label>
+                <InputSwitch checked={isValidationEnabled} onChange={(e) => setIsValidationEnabled(e.value)}/>
+            </div>
+
             {responseMessage && (
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', color: responseMessage.includes('Please enter') ? 'red' : 'green' }}>
                     {responseMessage}
@@ -1605,8 +1629,6 @@ export default function Layout({ icon_username }) {
         </div>
     );
 }
-
-
 
 
 
