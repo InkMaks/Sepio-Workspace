@@ -1396,6 +1396,7 @@ export default function Layout({ icon_username }) {
     };
 
     const showInfo = (message) => {
+        toast.current.clear();//to clear previous message
         toast.current.show({severity: 'info', summary: 'Info', detail: message, life: 300000});
     };
 
@@ -1409,6 +1410,8 @@ export default function Layout({ icon_username }) {
     };
 
     const handlePostMac = async () => {
+
+       
         try {
             if (searchQuery.trim() === '') {
                 showError('Please enter at least one MAC address.');
