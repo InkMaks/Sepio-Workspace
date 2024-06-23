@@ -1373,17 +1373,18 @@ import { Column } from 'primereact/column';
 import axios from 'axios';
 import SepioLogo from './../image/Sepio_Logo.png';
 import { Toast } from 'primereact/toast';
-import { InputSwitch } from 'primereact/inputswitch';
+import Switch from '@mui/material/Switch';
+import Typography from '@mui/material/Typography';
 
 export default function Layout({ icon_username }) {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [responseMessage, setResponseMessage] = useState('');
     const [foundMacAddresses, setFoundMacAddresses] = useState([]);
-    const [inputWidth, setInputWidth] = useState('300px'); // Initial width for the input field
+    const [inputWidth, setInputWidth] = useState('300px');
     const [marginLeft, setMarginLeft] = useState('auto');
-    const [isScrollDisabled, setIsScrollDisabled] = useState(true); // State to control scrolling
-    const [isValidationEnabled, setIsValidationEnabled] = useState(true); // State for validation switch
+    const [isScrollDisabled, setIsScrollDisabled] = useState(true);
+    const [isValidationEnabled, setIsValidationEnabled] = useState(true);
     const toast = useRef(null);
 
     const handleLogout = () => {
@@ -1395,8 +1396,8 @@ export default function Layout({ icon_username }) {
     };
 
     const showInfo = (message) => {
-        toast.current.show({severity: 'info', summary: 'Info', detail: message, life: 3000});
-    } 
+        toast.current.show({severity: 'info', summary: 'Info', detail: message, life: 300000});
+    };
 
     const showError = (message) => {
         toast.current.show({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
@@ -1425,14 +1426,25 @@ export default function Layout({ icon_username }) {
 
             const macAddresses = searchQuery.split(',').map(mac => mac.trim());
 
+
+            let invalidMacMessages = [];
+
+
             if (isValidationEnabled) {
                 for (let mac of macAddresses) {
                     if (!isValidMacAddress(mac)) {
-                        showInfo(`Invalid MAC address format: ${mac}`);
-                        // Exit if any MAC address is invalid
+                        invalidMacMessages.push(`Invalid MAC address format: ${mac}`);
+                        
                     }
                 }
+
+                if(invalidMacMessages.length > 0){
+                    showInfo(invalidMacMessages.join('\n'));
+                }
             }
+
+            
+
 
             const requestBody = {
                 "macAddress": macAddresses, 
@@ -1459,34 +1471,31 @@ export default function Layout({ icon_username }) {
             showError('Error occurred while checking MAC address.');
             setFoundMacAddresses([]);
         }
-    }
+    };
 
-    // Function to handle resizing and adjust input width
     const handleResize = () => {
         const windowWidth = window.innerWidth;
         if (windowWidth <= 280) {
-            setInputWidth('-10px'); // Adjust width for smaller screens
+            setInputWidth('-10px');
             setMarginLeft('10px');
         } else if (windowWidth <= 1300) {
-            setInputWidth('10px'); // Adjust width for medium screens
+            setInputWidth('10px');
             setMarginLeft('80px');
         } else {
-            setInputWidth('600px'); // Default width for larger screens
+            setInputWidth('600px');
             setMarginLeft('auto');
         }
     };
 
-    // Effect to add and remove resize event listener
     useEffect(() => {
         window.addEventListener('resize', handleResize);
-        handleResize(); // Initial call to set input width based on window size
+        handleResize();
 
         return () => {
             window.removeEventListener('resize', handleResize);
         };
     }, []);
 
-    // Effect to toggle body scroll
     useEffect(() => {
         if (isScrollDisabled) {
             document.body.style.overflow = 'hidden';
@@ -1495,7 +1504,7 @@ export default function Layout({ icon_username }) {
         }
 
         return () => {
-            document.body.style.overflow = 'auto'; // Cleanup on unmount
+            document.body.style.overflow = 'auto';
         };
     }, [isScrollDisabled]);
 
@@ -1549,82 +1558,109 @@ export default function Layout({ icon_username }) {
             <Toast ref={toast} />
             <Menubar start={start} end={end} />
             <div>
-            <CSidebar className='border-end custom-sidebar' visible={true} style={{ height: '100vh', position: 'sticky', top: '0' }}>
-                <CSidebarNav>
-                    <CContainer fluid>
-                        <CForm className='d-flex'>
-                            {/*Place for additional form elements after demo*/}
-                        </CForm>
-                    </CContainer>
-                    <CNavItem>
-                        <NavLink to='/querytool/mac' className='nav-link'><RiDashboardLine className='nav-icon' /> MAC</NavLink>
-                    </CNavItem>
-                    <CNavItem>
-                        <NavLink to='/querytool/settings' className='nav-link'><RiDashboardLine className='nav-icon' /> Settings </NavLink>
-                    </CNavItem>
-                </CSidebarNav>
-            </CSidebar>
+                <CSidebar className='border-end custom-sidebar' visible={true} style={{ height: '100vh', position: 'sticky', top: '0' }}>
+                    <CSidebarNav>
+                        <CContainer fluid>
+                            <CForm className='d-flex'>
+                                {/* Place for additional form elements after demo */}
+                            </CForm>
+                        </CContainer>
+                        <CNavItem>
+                            <NavLink to='/querytool/mac' className='nav-link'><RiDashboardLine className='nav-icon' /> MAC</NavLink>
+                        </CNavItem>
+                        <CNavItem>
+                            <NavLink to='/querytool/settings' className='nav-link'><RiDashboardLine className='nav-icon' /> Settings </NavLink>
+                        </CNavItem>
+                    </CSidebarNav>
+                </CSidebar>
 
-            <div style={{ display: 'flex', justifyContent: 'center', position: 'fixed', top: '180px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
-                <InputText
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search MAC"
-                    style={{
-                        width: inputWidth,
-                        minWidth: '200px', // Minimum width to prevent very narrow inputs
-                        maxWidth: '600px', // Maximum width to limit overly wide inputs
-                        transition: 'width 0.3s ease',
-                        borderRadius: '5px 0px 0px 5px'
-                    }}
-                />
-                <Button
-                    label='Search'
-                    icon='pi pi-search'
-                    onClick={handlePostMac}
-                    style={{
-                        backgroundColor: '#183462',
-                        borderColor: '#183462',
-                        marginLeft: '0px',
-                        borderRadius: '0 5px 5px 0' // Flat edge on left, circular on right
-                    }}
-                />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-900px', marginBottom: '20px' }}>
-                <label htmlFor="validationSwitch" style={{ marginRight: '10px' }}>MAC Address Validation:</label>
-                <InputSwitch checked={isValidationEnabled} onChange={(e) => setIsValidationEnabled(e.value)}/>
-            </div>
-
-            {responseMessage && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', color: responseMessage.includes('Please enter') ? 'red' : 'green' }}>
-                    {responseMessage}
+                <div style={{ display: 'flex', justifyContent: 'center', position: 'fixed', top: '180px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+                    <InputText
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search MAC"
+                        style={{
+                            width: inputWidth,
+                            minWidth: '200px',
+                            maxWidth: '600px',
+                            transition: 'width 0.3s ease',
+                            borderRadius: '5px 0px 0px 5px'
+                        }}
+                    />
+                    <Button
+                        label='Search'
+                        icon='pi pi-search'
+                        onClick={handlePostMac}
+                        style={{
+                            backgroundColor: '#183462',
+                            borderColor: '#183462',
+                            marginLeft: '0px',
+                            borderRadius: '0 5px 5px 0'
+                        }}
+                    />
                 </div>
-            )}
 
-            {foundMacAddresses.length > 0 && (
-                <div style={{ marginLeft: marginLeft, position: 'fixed', top: '250px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '1200px', paddingTop: '20px', zIndex: 1000 }}>
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        height: '400px',
-                        overflowY: 'auto',
-                        width: '100%',
-                        paddingRight: '10px',
-                    }}>
-                        {foundMacAddresses.map((item, index) => (
-                            <div key={index} style={{ marginBottom: '20px', width: '100%', maxWidth: '800px' }}>
-                                <h4 style={{ textAlign: 'center' }}>{item.macAddress}</h4>
-                                <DataTable value={[item]} responsiveLayout="scroll" style={{ marginLeft: marginLeft, width: '100%', minWidth: '800px' }}>
-                                    <Column field="macAddressStatus" header="MAC Address Status" style={{ minWidth: '300px', width: '60%' }} />
-                                    <Column field="tables" header="Found In" body={(rowData) => rowData.tables.join(", ")} style={{ minWidth: '300px', width: '40%' }} />
-                                </DataTable>
-                            </div>
-                        ))}
+                <div style={{ position: 'fixed', top: '110px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 ,  display: 'flex' }}>
+                    {/* <label htmlFor="validationSwitch" style={{ marginRight: '10px', marginTop: '5px' }}>MAC Address Validation:</label> */}
+                    <Typography style = {{marginTop: '5px'}} level = 'title-lg'>Mac Address validation</Typography>
+                    <Switch
+                   
+                    style = {{color: '#12467B'}}
+                    
+                        checked={isValidationEnabled}
+                        onChange={(e) => setIsValidationEnabled(e.target.checked)}
+                        
+                        slotProps={{
+                            track: {
+                                children: (
+                                    <React.Fragment>
+                                        <Typography component="span" level="inherit" sx={{ ml: '10px' }}>
+                                            On
+                                        </Typography>
+                                        <Typography component="span" level="inherit" sx={{ mr: '8px' }}>
+                                            Off
+                                        </Typography>
+                                    </React.Fragment>
+                                ),
+                            },
+                        }}
+                        sx={{
+                            '--Switch-thumbSize': '27px',
+                            '--Switch-trackWidth': '64px',
+                            '--Switch-trackHeight': '31px',
+                        }}
+                    />
+                </div>
+
+                {responseMessage && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', color: responseMessage.includes('Please enter') ? 'red' : 'green' }}>
+                        {responseMessage}
                     </div>
-                </div>
-            )}
+                )}
+
+                {foundMacAddresses.length > 0 && (
+                    <div style={{ marginLeft: marginLeft, position: 'fixed', top: '250px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '1200px', paddingTop: '20px', zIndex: 1000 }}>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            height: '400px',
+                            overflowY: 'auto',
+                            width: '100%',
+                            paddingRight: '10px',
+                        }}>
+                            {foundMacAddresses.map((item, index) => (
+                                <div key={index} style={{ marginBottom: '20px', width: '100%', maxWidth: '800px' }}>
+                                    <h4 style={{ textAlign: 'center' }}>{item.macAddress}</h4>
+                                    <DataTable value={[item]} responsiveLayout="scroll" style={{ marginLeft: marginLeft, width: '100%', minWidth: '800px' }}>
+                                        <Column field="macAddressStatus" header="MAC Address Status" style={{ minWidth: '300px', width: '60%' }} />
+                                        <Column field="tables" header="Found In" body={(rowData) => rowData.tables.join(", ")} style={{ minWidth: '300px', width: '40%' }} />
+                                    </DataTable>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
