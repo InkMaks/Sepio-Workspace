@@ -261,8 +261,7 @@ else
     exit 1
 fi
 
-#SET GLOBAL validate_password.policy = 0;
-log "Creating MySQL user Main_user with password Sepio_password..."
+log "Creating MySQL entry user with password ********..."
 sudo mysql -u root <<MYSQL_SCRIPT
 CREATE DATABASE IF NOT EXISTS nodejs_login;
 USE nodejs_login;
@@ -286,25 +285,6 @@ if [ $? -ne 0 ]; then
 fi
 
 log "MySQL user Main_user created successfully."
-
-log "Creating DB User..."
-cd $SEPIO_APP_DIR/backend
-node CreateUser.js
-
-
-#execute_mysql_command "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
-#execute_mysql_command "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;"
-#execute_mysql_command "FLUSH PRIVILEGES;"
-
-#execute_mysql_command "CREATE DATABASE IF NOT EXISTS nodejs_login;"
-
-#execute_mysql_command "ALTER USER 'Main_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Sepio_password';"
-
-#execute_mysql_command "GRANT ALL PRIVILEGES ON nodejs_login.* TO 'Main_user'@'localhost';"
-
-#execute_mysql_command "FLUSH PRIVILEGES;"
-
-log "Database created, user modified, and privileges granted successfully."
 
 log "Installing Redis server..."
 sudo apt-get update && sudo apt-get install -y redis-server
