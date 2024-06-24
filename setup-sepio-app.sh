@@ -248,6 +248,18 @@ CREATE TABLE IF NOT EXISTS user (
     otp_secret VARCHAR(255),
     otp_verified BOOLEAN DEFAULT FALSE
 );
+CREATE TABLE IF NOT EXISTS ServiceNowCredentials (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  instance VARCHAR(255) NOT NULL,
+  username VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sepio (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  instance VARCHAR(255) NOT NULL,
+  username VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL
+);
 MYSQL_SCRIPT
 
 if [ $? -ne 0 ]; then
