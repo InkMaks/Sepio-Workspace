@@ -6,9 +6,10 @@ CURRENT_STEP=0
 
 update_progress() {
     local step_message=$1
-    local progress=$((CURRENT_STEP * 100 / TOTAL_STEPS))
     CURRENT_STEP=$((CURRENT_STEP + 1))
-    echo $progress | dialog --gauge "$step_message" 10 70 0
+    local progress=$((CURRENT_STEP * 100 / TOTAL_STEPS))
+    echo "$progress"
+    echo "$progress" | dialog --gauge "$step_message" 10 70 0
     sleep 1  # Simulate time taken by each step
 }
 
@@ -18,7 +19,7 @@ log() {
 
 error_log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | lolcat
-    dialog --msgbox "ERROR: $1" 10 50
+    echo "ERROR: $1" | dialog --msgbox 10 50
     exit 1
 }
 
@@ -135,113 +136,114 @@ show_header() {
 }
 
 # Main script execution starts here
-install_packages dialog
 
 show_header
-
+install_packages dialog
 log "Starting setup script..."
 
-update_progress "Installing required packages..."
-install_packages figlet
-install_packages lolcat
-install_packages git
-install_packages jq
-install_packages expect
+# Open a dialog gauge
+{
+    update_progress "Installing required packages..."
+    install_packages figlet
+    install_packages lolcat
+    install_packages git
+    install_packages jq
+    install_packages expect
 
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
-SEPIO_APP_DIR="$SCRIPT_DIR/Sepio-App"
+    SCRIPT_DIR=$(dirname "$(realpath "$0")")
+    SEPIO_APP_DIR="$SCRIPT_DIR/Sepio-App"
 
-update_progress "Installing npm and deps..."
-install_npm
-install_frontend_dependencies "$SEPIO_APP_DIR/front-end"
-install_backend_dependencies "$SEPIO_APP_DIR/backend"
+    update_progress "Installing npm and deps..."
+    install_npm
+    install_frontend_dependencies "$SEPIO_APP_DIR/front-end"
+    install_backend_dependencies "$SEPIO_APP_DIR/backend"
 
-install_nvm
+    install_nvm
 
-update_progress "Checking for required Node.js versions..."
-backend_node_version=$(get_required_node_version "$SEPIO_APP_DIR/backend/package.json")
-log "Required Node.js version for backend: $backend_node_version"
-if [ "$backend_node_version" == "null" ]; then
-    error_log "Error: Required Node.js version for backend not specified in package.json."
-fi
-install_node_version "$backend_node_version"
+    update_progress "Checking for required Node.js versions..."
+    backend_node_version=$(get_required_node_version "$SEPIO_APP_DIR/backend/package.json")
+    log "Required Node.js version for backend: $backend_node_version"
+    if [ "$backend_node_version" == "null" ]; then
+        error_log "Error: Required Node.js version for backend not specified in package.json."
+    fi
+    install_node_version "$backend_node_version"
 
-frontend_node_version=$(get_required_node_version "$SEPIO_APP_DIR/front-end/package.json")
-log "Required Node.js version for frontend: $frontend_node_version"
-if [ "$frontend_node_version" == "null" ]; then
-    error_log "Error: Required Node.js version for frontend not specified in package.json."
-fi
-install_node_version "$frontend_node_version"
+    frontend_node_version=$(get_required_node_version "$SEPIO_APP_DIR/front-end/package.json")
+    log "Required Node.js version for frontend: $frontend_node_version"
+    if [ "$frontend_node_version" == "null" ]; then
+        error_log "Error: Required Node.js version for frontend not specified in package.json."
+    fi
+    install_node_version "$frontend_node_version"
 
-update_progress "Installing latest eslint-webpack-plugin..."
-npm install eslint-webpack-plugin@latest --save-dev
+    update_progress "Installing latest eslint-webpack-plugin..."
+    npm install eslint-webpack-plugin@latest --save-dev
 
-update_progress "Generating Prisma Client..."
-npx prisma generate
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to generate Prisma Client."
-fi
-log "Prisma Client generated successfully."
+    update_progress "Generating Prisma Client..."
+    npx prisma generate
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to generate Prisma Client."
+    fi
+    log "Prisma Client generated successfully."
 
-update_progress "Granting privileges for Updater and scheduling auto updates..."
-schedule_updater
-cd "$SCRIPT_DIR" || { error_log "Error: Directory $SCRIPT_DIR not found."; }
-chmod +x Sepio_Updater.sh
-sudo touch /var/log/sepio_updater.log
-sudo chown "$USER:$USER" /var/log/sepio_updater.log
+    update_progress "Granting privileges for Updater and scheduling auto updates..."
+    schedule_updater
+    cd "$SCRIPT_DIR" || { error_log "Error: Directory $SCRIPT_DIR not found."; }
+    chmod +x Sepio_Updater.sh
+    sudo touch /var/log/sepio_updater.log
+    sudo chown "$USER:$USER" /var/log/sepio_updater.log
 
-update_progress "Installing MySQL server..."
-sudo apt-get update && sudo apt-get install -y mysql-server
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to install MySQL server."
-fi
+    update_progress "Installing MySQL server..."
+    sudo apt-get update && sudo apt-get install -y mysql-server
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to install MySQL server."
+    fi
 
-update_progress "Securing MySQL installation..."
-sudo expect -c "
-spawn mysql_secure_installation
-expect \"VALIDATE PASSWORD COMPONENT?\" {
-    send -- \"Y\r\"
-    expect \"There are three levels of password validation policy:\"
-    send -- \"1\r\"  # Choose MEDIUM (or 2 for STRONG if needed)
-}
+    update_progress "Securing MySQL installation..."
+    sudo expect -c "
+    spawn mysql_secure_installation
+    expect \"VALIDATE PASSWORD COMPONENT?\" {
+        send -- \"Y\r\"
+        expect \"There are three levels of password validation policy:\"
+        send -- \"1\r\"  # Choose MEDIUM (or 2 for STRONG if needed)
+    }
 
-expect \"Remove anonymous users?\" {
-    send -- \"Y\r\"
-}
+    expect \"Remove anonymous users?\" {
+        send -- \"Y\r\"
+    }
 
-expect \"Disallow root login remotely?\" {
-    send -- \"Y\r\"
-}
+    expect \"Disallow root login remotely?\" {
+        send -- \"Y\r\"
+    }
 
-expect \"Remove test database and access to it?\" {
-    send -- \"Y\r\"
-}
+    expect \"Remove test database and access to it?\" {
+        send -- \"Y\r\"
+    }
 
-expect \"Reload privilege tables now?\" {
-    send -- \"Y\r\"
-}
-expect eof
-"
+    expect \"Reload privilege tables now?\" {
+        send -- \"Y\r\"
+    }
+    expect eof
+    "
 
-update_progress "Starting MySQL service..."
-sudo systemctl start mysql
+    update_progress "Starting MySQL service..."
+    sudo systemctl start mysql
 
-update_progress "Enabling MySQL service to start on boot..."
-sudo systemctl enable --now mysql
+    update_progress "Enabling MySQL service to start on boot..."
+    sudo systemctl enable mysql
 
-update_progress "Checking MySQL status..."
-sudo systemctl status --quiet mysql
+    update_progress "Checking MySQL status..."
+    sudo systemctl is-active mysql
 
-update_progress "Checking MySQL port configuration..."
-mysql_port=$(sudo ss -tln | grep ':3306 ')
-if [ -n "$mysql_port" ]; then
-    log "MySQL is running on port 3306."
-else
-    error_log "Error: MySQL is not running on port 3306."
-fi
+    update_progress "Checking MySQL port configuration..."
+    mysql_port=$(sudo ss -tln | grep ':3306 ')
+    if [ -n "$mysql_port" ]; then
+        log "MySQL is running on port 3306."
+    else
+        error_log "Error: MySQL is not running on port 3306."
+    fi
 
-update_progress "Creating MySQL user and database..."
-sudo mysql <<MYSQL_SCRIPT
+    update_progress "Creating MySQL user and database..."
+    sudo mysql <<MYSQL_SCRIPT
 CREATE DATABASE IF NOT EXISTS nodejs_login;
 USE nodejs_login;
 
@@ -270,38 +272,38 @@ CREATE TABLE IF NOT EXISTS sepio (
 );
 MYSQL_SCRIPT
 
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to create MySQL user Main_user."
-fi
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to create MySQL user Main_user."
+    fi
 
-log "MySQL user Main_user created successfully."
+    log "MySQL user Main_user created successfully."
 
-update_progress "Installing Redis server..."
-sudo apt-get update && sudo apt-get install -y redis-server
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to install Redis server."
-fi
+    update_progress "Installing Redis server..."
+    sudo apt-get update && sudo apt-get install -y redis-server
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to install Redis server."
+    fi
 
-update_progress "Starting Redis service..."
-sudo systemctl start redis-server
+    update_progress "Starting Redis service..."
+    sudo systemctl start redis-server
 
-update_progress "Enabling Redis service to start on boot..."
-sudo systemctl enable redis-server
+    update_progress "Enabling Redis service to start on boot..."
+    sudo systemctl enable redis-server
 
-update_progress "Checking Redis status..."
-sudo systemctl is-active redis-server
+    update_progress "Checking Redis status..."
+    sudo systemctl is-active redis-server
 
-update_progress "Checking Redis port configuration..."
-redis_port=$(sudo ss -tln | grep ':6379 ')
-if [ -n "$redis_port" ]; then
-    log "Redis is running on port 6379."
-    log "Redis installation and setup completed."
-else
-    error_log "Error: Redis is not running on port 6379."
-fi
+    update_progress "Checking Redis port configuration..."
+    redis_port=$(sudo ss -tln | grep ':6379 ')
+    if [ -n "$redis_port" ]; then
+        log "Redis is running on port 6379."
+        log "Redis installation and setup completed."
+    else
+        error_log "Error: Redis is not running on port 6379."
+    fi
 
-update_progress "Creating systemd service for React build..."
-sudo bash -c "cat <<EOL > /etc/systemd/system/react-build.service
+    update_progress "Creating systemd service for React build..."
+    sudo bash -c "cat <<EOL > /etc/systemd/system/react-build.service
 [Unit]
 Description=React Build Service
 After=network.target
@@ -317,12 +319,12 @@ WorkingDirectory=$SEPIO_APP_DIR/front-end
 [Install]
 WantedBy=multi-user.target
 EOL"
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to create react-build.service."
-fi
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to create react-build.service."
+    fi
 
-update_progress "Creating systemd service for server.js..."
-sudo bash -c "cat <<EOL > /etc/systemd/system/node-server.service
+    update_progress "Creating systemd service for server.js..."
+    sudo bash -c "cat <<EOL > /etc/systemd/system/node-server.service
 [Unit]
 Description=Node.js Server
 After=network.target
@@ -338,41 +340,42 @@ WorkingDirectory=$SEPIO_APP_DIR/backend
 [Install]
 WantedBy=multi-user.target
 EOL"
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to create node-server.service."
-fi
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to create node-server.service."
+    fi
 
-update_progress "Reloading systemd daemon to pick up the new service files..."
-sudo systemctl daemon-reload
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to reload systemd daemon."
-fi
+    update_progress "Reloading systemd daemon to pick up the new service files..."
+    sudo systemctl daemon-reload
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to reload systemd daemon."
+    fi
 
-update_progress "Enabling react-build.service to start on boot..."
-sudo systemctl enable react-build.service
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to enable react-build.service."
-fi
+    update_progress "Enabling react-build.service to start on boot..."
+    sudo systemctl enable react-build.service
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to enable react-build.service."
+    fi
 
-update_progress "Starting react-build.service... Please be patient, don't break up the process..."
-sudo systemctl start react-build.service
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to start react-build.service."
-fi
+    update_progress "Starting react-build.service... Please be patient, don't break up the process..."
+    sudo systemctl start react-build.service
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to start react-build.service."
+    fi
 
-update_progress "Enabling node-server.service to start on boot..."
-sudo systemctl enable node-server.service
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to enable node-server.service."
-fi
+    update_progress "Enabling node-server.service to start on boot..."
+    sudo systemctl enable node-server.service
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to enable node-server.service."
+    fi
 
-update_progress "Starting node-server.service..."
-sudo systemctl start node-server.service
-if [ $? -ne 0 ]; then
-    error_log "Error: Failed to start node-server.service."
-fi
+    update_progress "Starting node-server.service..."
+    sudo systemctl start node-server.service
+    if [ $? -ne 0 ]; then
+        error_log "Error: Failed to start node-server.service."
+    fi
 
-update_progress "Checking application availability..."
-check_port_availability 3000
+    update_progress "Checking application availability..."
+    check_port_availability 3000
 
-log "Setup script executed successfully."
+    log "Setup script executed successfully."
+} | dialog --gauge "Starting installation..." 10 70 0
