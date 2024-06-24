@@ -46,7 +46,7 @@ export default function TwoFactorAuth() {
     axios.post('/verify', { username: username, token: data.token.trim() })
       .then(response => {
         if (response.data.verified) {
-          showSuccess('');
+          showSuccess('2FA successful!');
           setData((current) => ({ ...current, status: 'loading' }));
           setTimeout(() => {
             setData({ token: '', status: 'sent' });
