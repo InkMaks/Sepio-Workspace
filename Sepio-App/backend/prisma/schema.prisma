@@ -7,10 +7,24 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model user {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique
-  password   String
-  otp_secret String
+model User {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  password    String
+  otp_secret  String
   otp_verified Boolean
+}
+
+model ServiceNowCredentials {
+  id       Int    @id @default(autoincrement())
+  instance String
+  username String
+  password String
+}
+
+model sepio {
+  id       Int     @id @default(autoincrement())
+  instance String
+  username String
+  password String
 }

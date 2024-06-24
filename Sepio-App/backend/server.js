@@ -844,6 +844,16 @@
 // });
 
 
+
+
+
+
+
+
+
+
+
+
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
@@ -1015,51 +1025,62 @@ app.get('/get-sepio-source', async (req, res) => {
 
 app.post('/check-connection', async (req, res) => {
   const { serviceNowInstance, username, password } = req.body;
-  serviceNowCredentials = { serviceNowInstance, username, password };
-
+  serviceNowCredentials = {serviceNowInstance, username, password};
 
   try {
-    const responce = await axios.get(`https://${serviceNowInstance}/api/now/table/incident`, {
+    const response = await axios.get(`https://${serviceNowInstance}/api/now/table/incident`, {
       auth: {
         username,
         password
       }
     });
 
-    if (responce.status === 200) {
-      res.json({ success: true, message: 'Connection successful' });
+    if (response.status === 200) {
+      try {
+        console.log('Creating new record in ServiceNowCredentials:', { instance: serviceNowInstance, username, password });
 
+        const newRecord = await prisma.serviceNowCredentials.create({
+          data: {
+            instance: serviceNowInstance,
+            username,
+            password
+          }
+        });
+
+        console.log('New record created:', newRecord);
+        res.json({ success: true, message: 'Connection successful' });
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        res.status(500).json({ success: false, message: 'Failed to save credentials to the database' });
+      }
     } else {
-      res.status(responce.status).json({ success: false, message: 'Connection faild' })
+      res.status(response.status).json({ success: false, message: 'Connection failed' });
     }
-
   } catch (error) {
-    if (error.responce && error.response.status === 401) {
+    console.error('API error:', error);
+    if (error.response && error.response.status === 401) {
       res.status(401).json({ success: false, message: 'Authentication failed: Invalid username or password' });
-    } else if (error.responce && error.responce.status === 404) {
-      res.status(404).json({ success: false, message: 'Service Now connection failed invalid instance.' });
+    } else if (error.response && error.response.status === 404) {
+      res.status(404).json({ success: false, message: 'ServiceNow connection failed: Invalid instance.' });
     } else {
       res.status(500).json({ success: false, message: 'Connection failed' });
     }
-
   }
-})
+});
+
+
 
 app.post('/check-sepio-connection', async (req, res) => {
-  let { sepioEndpoint, sepioUsername, sepioPassword } = req.body;
+  const { sepioEndpoint, sepioUsername, sepioPassword } = req.body;
   sepioCredentials = { sepioEndpoint, sepioUsername, sepioPassword };
-
   if (sepioEndpoint && sepioUsername && sepioPassword) {
-
-    sepioCredentialsAvailable = true;
-
     console.log("sepioEndpoint > " + sepioEndpoint);
-
     console.log("username > " + sepioUsername);
     console.log("password > " + sepioPassword);
-    var requestBody = {
-      "username": sepioUsername,
-      "password": sepioPassword
+
+    const requestBody = {
+      username: sepioUsername,
+      password: sepioPassword
     };
 
     const config = {
@@ -1070,19 +1091,36 @@ app.post('/check-sepio-connection', async (req, res) => {
 
     try {
       const response = await axios.post(`https://${sepioEndpoint}/prime/webui/Auth/LocalLogin`, requestBody, config);
-
+      
       if (response.status === 200) {
-        res.json({ success: true, message: 'Connection successful!' });
+        try {
+          const newRecord = await prisma.sepio.create({
+            data: {
+              instance: sepioEndpoint,
+              username: sepioUsername,
+              password: sepioPassword
+            }
+          });
+
+          console.log('New record created:', newRecord);
+          res.json({ success: true, message: 'Connection successful!' });
+        } catch (dbError) {
+          console.error('Database error:', dbError);
+          res.status(500).json({ success: false, message: 'Failed to save credentials to the database' });
+        }
       } else {
         res.status(500).json({ success: false, message: 'Connection failed!' });
       }
     } catch (error) {
+      console.error('API error:', error);
       res.status(500).json({ success: false, message: 'Connection failed!', error: error.message });
     }
   } else {
-    res.status(500).json({ success: false, message: 'Connection failed!', error: error.message });
+    res.status(500).json({ success: false, message: 'All fields are required!' });
   }
 });
+
+
 
 const getMacAddresses = async (macAddress, serviceNowInstance, snUsername, snPassword) => {
 
@@ -1322,7 +1360,9 @@ app.post('/api/check-mac', async (req, res) => {
   }
 });
 
-// Serve static files from the React build directory 
+
+
+
 app.use(express.static(path.join(__dirname, '../front-end/build')));
 
 // Serve React app for any other routes
