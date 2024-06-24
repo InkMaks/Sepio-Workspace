@@ -10,7 +10,7 @@ update_progress() {
     CURRENT_STEP=$((CURRENT_STEP + 1))
     local progress=$((CURRENT_STEP * 100 / TOTAL_STEPS))
     echo "$progress"
-    echo "$progress" | dialog --keep-tite --gauge "$step_message" 3 25 0
+    echo "$progress" | dialog --keep-tite --gauge "$step_message" 10 50 0
     sleep 1  # Simulate time taken by each step
 }
 
@@ -22,7 +22,7 @@ log() {
 error_log() {
     local message="$1"
     echo "$(date '+%Y-%m-%d %H:%M:%S') - ERROR: $message" | tee -a "$LOG_FILE"
-    echo "ERROR: $message" | dialog --keep-tite --msgbox 5 35
+    echo "ERROR: $message" | dialog --keep-tite --msgbox 10 50
     exit 1
 }
 
@@ -95,7 +95,7 @@ install_node_version() {
         export NVM_DIR="$HOME/.nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     fi
-    nvm install "$node_version"
+    nvm install "$node_version" >> "$LOG_FILE" 2>&1
     if [ $? -ne 0 ]; then
         error_log "Error: Failed to install Node.js version $node_version using nvm."
     fi
@@ -107,7 +107,7 @@ install_frontend_dependencies() {
     local frontend_dir=$1
     log "Installing frontend dependencies in $frontend_dir..."
     cd "$frontend_dir" || { error_log "Error: Directory $frontend_dir not found."; }
-    npm install
+    npm install --loglevel=error >> "$LOG_FILE" 2>&1
     if [ $? -ne 0 ]; then
         error_log "Error: Failed to install frontend dependencies."
     fi
@@ -117,7 +117,7 @@ install_backend_dependencies() {
     local backend_dir=$1
     log "Installing backend dependencies in $backend_dir..."
     cd "$backend_dir" || { error_log "Error: Directory $backend_dir not found."; }
-    npm install
+    npm install --loglevel=error >> "$LOG_FILE" 2>&1
     if [ $? -ne 0 ]; then
         error_log "Error: Failed to install backend dependencies."
     fi
@@ -392,6 +392,6 @@ EOL"
     check_port_availability 3000
 
     log "Setup script executed successfully."
-} | dialog --gauge "Starting installation..." 3 25 0
+} | dialog --gauge "Starting installation..." 10 50 0
 
 exec >&-
