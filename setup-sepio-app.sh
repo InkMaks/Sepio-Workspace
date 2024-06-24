@@ -2,35 +2,6 @@
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | lolcat
 }
-create_mysql_cnf() {
-    local mysql_cnf="$HOME/.my.cnf"
-    if [ ! -f "$mysql_cnf" ]; then
-        log "Creating MySQL configuration file $mysql_cnf"
-        cat <<EOF > "$mysql_cnf"
-[client]
-user=root
-password=root
-EOF
-        # Secure the file
-        chmod 600 "$mysql_cnf"
-        log "MySQL configuration file created."
-    else
-        log "MySQL configuration file $mysql_cnf already exists."
-    fi
-
-    # Ensure the file is readable
-    chmod 400 "$mysql_cnf"
-    log "MySQL configuration file permissions updated."
-}
-
-execute_mysql_command() {
-    local query="$1"
-    mysql --defaults-file="$HOME/.my.cnf" -e "$query"
-    if [ $? -ne 0 ]; then
-        log "Error executing MySQL query: $query"
-        exit 1
-    fi
-}
 
 install_packages() {
     local package=$1
