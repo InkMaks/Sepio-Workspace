@@ -179,12 +179,17 @@ chmod +x Sepio_Updater.sh
 sudo touch /var/log/sepio_updater.log
 sudo chown "$USER:$USER" /var/log/sepio_updater.log
 
+
+if systemctl is-active --quiet mysql; then
+    log "MySQL server is already installed."
+else
 log "Installing MySQL server..."
 sudo apt-get update && sudo apt-get install -y mysql-server
 if [ $? -ne 0 ]; then
     log "Error: Failed to install MySQL server."
     exit 1
 fi
+
 
 log "Securing MySQL installation..."
 sudo expect -c "
@@ -231,13 +236,14 @@ else
     log "Error: MySQL is not running on port 3306."
     exit 1
 fi
+fi
 
 log "Creating MySQL entry user with password ********..."
 sudo mysql -u root <<MYSQL_SCRIPT
 CREATE DATABASE IF NOT EXISTS nodejs_login;
 USE nodejs_login;
 
-CREATE USER 'Main_user'@'localhost' IDENTIFIED BY 'Sepio_password';
+CREATE USER IF NOT EXISTS 'Main_user'@'localhost' IDENTIFIED BY 'Sepio_password';
 GRANT ALL PRIVILEGES ON nodejs_login.* TO 'Main_user'@'localhost';
 FLUSH PRIVILEGES;
 
