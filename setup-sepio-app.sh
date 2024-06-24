@@ -135,13 +135,13 @@ show_header() {
 }
 
 # Main script execution starts here
+install_packages dialog
 
 show_header
 
 log "Starting setup script..."
 
 update_progress "Installing required packages..."
-install_packages dialog
 install_packages figlet
 install_packages lolcat
 install_packages git
