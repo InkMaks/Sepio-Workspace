@@ -1,10 +1,7 @@
 #!/bin/bash
 
-LOG_FILE="/tmp/sepio_installation.log"
-exec > >(tee -a "$LOG_FILE") 2>&1
-
 # Initialize progress bar
-TOTAL_STEPS=21  # Total number of steps in the installation process
+TOTAL_STEPS=20  # Total number of steps in the installation process
 CURRENT_STEP=0
 
 update_progress() {
@@ -12,16 +9,16 @@ update_progress() {
     CURRENT_STEP=$((CURRENT_STEP + 1))
     local progress=$((CURRENT_STEP * 100 / TOTAL_STEPS))
     echo "$progress"
-    echo "$progress" | dialog --gauge "$step_message" 10 70 0
+    echo "$progress" | dialog --keep-tite --gauge "$step_message" 10 70 0
     sleep 1  # Simulate time taken by each step
 }
 
 log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | lolcat
 }
 
 error_log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | lolcat
     echo "ERROR: $1" | dialog --msgbox 10 50
     exit 1
 }
@@ -62,6 +59,13 @@ install_npm() {
     else
         log "npm is already installed."
     fi
+}
+
+schedule_updater() {
+    local script_path=$(realpath "$SCRIPT_DIR/Sepio_Updater.sh")
+    local cron_job="0 3 * * * $script_path >> /var/log/sepio_updater.log 2>&1"
+    (crontab -l 2>/dev/null; echo "$cron_job") | crontab -
+    log "Scheduled Sepio_Updater.sh to run daily at 3:00 AM."
 }
 
 get_required_node_version() {
@@ -126,9 +130,9 @@ check_port_availability() {
 }
 
 show_header() {
-    echo "===================================="
-    figlet -c Sepio Installer
-    echo "===================================="
+    echo "====================================" | lolcat
+    figlet -c Sepio Installer | lolcat
+    echo "====================================" | lolcat
 }
 
 # Main script execution starts here
@@ -182,29 +186,8 @@ log "Starting setup script..."
     fi
     log "Prisma Client generated successfully."
 
-    update_progress "Prompting for auto-update scheduling..."
-    dialog --yesno "Would you like to schedule daily auto-updates?" 10 50
-    response=$?
-    case $response in
-        0)
-            log "User chose to schedule auto-updates."
-            schedule_updater() {
-                local script_path=$(realpath "$SCRIPT_DIR/Sepio_Updater.sh")
-                local cron_job="0 3 * * * $script_path >> /var/log/sepio_updater.log 2>&1"
-                (crontab -l 2>/dev/null; echo "$cron_job") | crontab -
-                log "Scheduled Sepio_Updater.sh to run daily at 3:00 AM."
-            }
-            schedule_updater
-            ;;
-        1)
-            log "User chose not to schedule auto-updates."
-            ;;
-        255)
-            error_log "Dialog canceled by the user."
-            ;;
-    esac
-
     update_progress "Granting privileges for Updater and scheduling auto updates..."
+    schedule_updater
     cd "$SCRIPT_DIR" || { error_log "Error: Directory $SCRIPT_DIR not found."; }
     chmod +x Sepio_Updater.sh
     sudo touch /var/log/sepio_updater.log
@@ -228,20 +211,20 @@ log "Starting setup script..."
     expect \"Remove anonymous users?\" {
         send -- \"Y\r\"
     }
+
     expect \"Disallow root login remotely?\" {
         send -- \"Y\r\"
     }
+
     expect \"Remove test database and access to it?\" {
         send -- \"Y\r\"
     }
+
     expect \"Reload privilege tables now?\" {
         send -- \"Y\r\"
     }
     expect eof
     "
-    if [ $? -ne 0 ]; then
-        error_log "Error: Failed to secure MySQL installation."
-    fi
 
     update_progress "Starting MySQL service..."
     sudo systemctl start mysql
