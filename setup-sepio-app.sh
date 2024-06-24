@@ -379,4 +379,4 @@ EOL"
     check_port_availability 3000
 
     log "Setup script executed successfully."
-} | dialog --gauge "Starting installation..." 10 70 0
+} | dialog --gauge "Starting installation..." 3 25 0
