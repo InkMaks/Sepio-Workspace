@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import FormHelperText from '@mui/joy/FormHelperText';
 import Input from '@mui/joy/Input';
 import Button from '@mui/joy/Button';
+import {Toast} from 'primereact/toast'
 import axios from 'axios';
 
 export default function TwoFactorAuth() {
@@ -13,6 +14,16 @@ export default function TwoFactorAuth() {
   const [data, setData] = useState({ token: '', status: 'initial' });
   const [qrCode, setQrCode] = useState(location.state?.qrCode || '');
   const username = location.state?.username; // Get the username from the location state
+  const toast = useRef(null);
+
+  const showSuccess = (message) => {
+    toast.current.show({severity: 'success', summary: 'Success', detail: message, life: 3000});
+  }
+
+  const showError = (message) => {
+    toast.current.clear();
+    toast.current.show({severity: 'error', summary: 'Error', detail: message, life: 3000});
+  }
 
   useEffect(() => {
     if (!username) {
@@ -27,6 +38,7 @@ export default function TwoFactorAuth() {
     if (!username) {
       console.error('Username is missing. Cannot submit 2FA token.');
       setData((current) => ({ ...current, status: 'failure' }));
+      showError('Incorrect 2FA code.');
       return;
     }
 
@@ -34,6 +46,7 @@ export default function TwoFactorAuth() {
     axios.post('/verify', { username: username, token: data.token.trim() })
       .then(response => {
         if (response.data.verified) {
+          showSuccess('');
           setData((current) => ({ ...current, status: 'loading' }));
           setTimeout(() => {
             setData({ token: '', status: 'sent' });
@@ -42,16 +55,19 @@ export default function TwoFactorAuth() {
         } else {
           console.log(`Verification failed: ${response.data.message}`);
           setData((current) => ({ ...current, status: 'failure' }));
+          showError('Incorrect 2FA code.');
         }
       })
       .catch(error => {
         console.error('Error verifying token:', error);
         setData((current) => ({ ...current, status: 'failure' }));
+        showError('Incorrect 2FA code.');
       });
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#778899', padding: '40px', borderRadius: '10px', maxWidth: '400px', margin: 'auto', marginTop: '100px' }}>
+      <Toast ref = {toast}/>
       {qrCode && (
         <div>
           <img src={qrCode} alt="QR Code" />
@@ -82,11 +98,6 @@ export default function TwoFactorAuth() {
             >
               Verify
             </Button>
-            {data.status === 'failure' && (
-              <FormHelperText sx={(theme) => ({ color: theme.vars.palette.danger[400] })}>
-                Incorrect 2FA code.
-              </FormHelperText>
-            )}
           </FormControl>
         </form>
       </div>
