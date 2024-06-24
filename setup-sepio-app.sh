@@ -3,23 +3,26 @@
 # Initialize progress bar
 TOTAL_STEPS=20  # Total number of steps in the installation process
 CURRENT_STEP=0
+LOG_FILE="/tmp/sepio_installation.log"
 
 update_progress() {
     local step_message=$1
     CURRENT_STEP=$((CURRENT_STEP + 1))
     local progress=$((CURRENT_STEP * 100 / TOTAL_STEPS))
     echo "$progress"
-    echo "$progress" | dialog --keep-tite --gauge "$step_message" 10 70 0
+    echo "$progress" | dialog --keep-tite --gauge "$step_message" 3 25 0
     sleep 1  # Simulate time taken by each step
 }
 
 log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | lolcat
+    local message="$1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $message" | tee -a "$LOG_FILE"
 }
 
 error_log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | lolcat
-    echo "ERROR: $1" | dialog --msgbox 10 50
+    local message="$1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - ERROR: $message" | tee -a "$LOG_FILE"
+    echo "ERROR: $message" | dialog --keep-tite --msgbox 5 35
     exit 1
 }
 
@@ -27,9 +30,9 @@ install_packages() {
     local package=$1
     if ! command -v "$package" &> /dev/null; then
         log "$package is not installed. Installing $package..."
-        sudo apt-get update && sudo apt-get install -y "$package"
+        sudo apt-get update && sudo apt-get install -y "$package" >> "$LOG_FILE" 2>&1
         if [ $? -ne 0 ]; then
-            error_log "Error: Failed to install $package."
+            error_log "Failed to install $package."
         fi
     else
         log "$package is already installed."
@@ -51,9 +54,9 @@ install_nvm() {
 install_npm() {
     if ! command -v npm &> /dev/null; then
         log "npm is not installed. Installing npm..."
-        sudo apt-get update && sudo apt-get install -y npm
+        sudo apt-get update && sudo apt-get install -y npm >> "$LOG_FILE" 2>&1
         if [ $? -ne 0 ]; then
-            error_log "Error: Failed to install npm."
+            error_log "Failed to install npm."
         fi
         log "npm installed successfully."
     else
@@ -61,10 +64,20 @@ install_npm() {
     fi
 }
 
+schedule_updater_prompt() {
+    dialog --keep-tite --yesno "Do you want to schedule auto updates?" 10 70
+    response=$?
+    case $response in
+        0)  schedule_updater ;;
+        1)  log "Auto updates not scheduled." ;;
+        255) log "Cancelled." ;;
+    esac
+}
+
 schedule_updater() {
     local script_path=$(realpath "$SCRIPT_DIR/Sepio_Updater.sh")
     local cron_job="0 3 * * * $script_path >> /var/log/sepio_updater.log 2>&1"
-    (crontab -l 2>/dev/null; echo "$cron_job") | crontab -
+    (crontab -l 2>/dev/null; echo "$cron_job") | crontab - >> "$LOG_FILE" 2>&1
     log "Scheduled Sepio_Updater.sh to run daily at 3:00 AM."
 }
 
@@ -137,7 +150,7 @@ show_header() {
 
 # Main script execution starts here
 
-show_header
+exec > >(tee -a "$LOG_FILE") 2>&1
 
 install_packages dialog
 log "Starting setup script..."
@@ -380,3 +393,5 @@ EOL"
 
     log "Setup script executed successfully."
 } | dialog --gauge "Starting installation..." 3 25 0
+
+exec >&-
