@@ -255,7 +255,7 @@
 //     const userProfile = [
 // 		{
 // 			template: function setProfile(){
-					
+
 // 				return (
 // 					<span className='list-group mt-3'  >
 // 						<p>{icon_username}</p>
@@ -295,7 +295,7 @@
 // 			 />
 //     </div>
 //   );
- 
+
 
 //     return (
 //         <div>
@@ -485,7 +485,7 @@
 //     const userProfile = [
 // 		{
 // 			template: function setProfile(){
-					
+
 // 				return (
 // 					<span className='list-group mt-3'  >
 // 						<p>{icon_username}</p>
@@ -525,7 +525,7 @@
 // 			 />
 //     </div>
 //   );
- 
+
 
 //     return (
 //         <div>
@@ -728,7 +728,7 @@
 //     const userProfile = [
 // 		{
 // 			template: function setProfile(){
-					
+
 // 				return (
 // 					<span className='list-group mt-3'  >
 // 						<p>{icon_username}</p>
@@ -768,7 +768,7 @@
 // 			 />
 //     </div>
 //   );
- 
+
 
 //     return (
 //         <div>
@@ -801,7 +801,7 @@
 //             maxWidth: '600px', // Maximum width to limit overly wide inputs
 //             transition: 'width 0.3s ease',
 //             borderRadius: '5px 0px 0px 5px',
-            
+
 //         }}
 //     />
 //     <Button
@@ -1215,7 +1215,7 @@
 //     const userProfile = [
 // 		{
 // 			template: function setProfile(){
-					
+
 // 				return (
 // 					<span className='list-group mt-3'  >
 // 						<p>{icon_username}</p>
@@ -1255,7 +1255,7 @@
 // 			 />
 //     </div>
 //   );
- 
+
 
 //     return (
 //         <div>
@@ -1360,7 +1360,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Menubar } from 'primereact/menubar';
-import { Menu } from 'primereact/menu';
+import { Menu, MenuItem } from '@mui/material';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
@@ -1377,296 +1377,326 @@ import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 
 export default function Layout({ icon_username }) {
-    const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [responseMessage, setResponseMessage] = useState('');
-    const [foundMacAddresses, setFoundMacAddresses] = useState([]);
-    const [inputWidth, setInputWidth] = useState('300px');
-    const [marginLeft, setMarginLeft] = useState('auto');
-    const [isScrollDisabled, setIsScrollDisabled] = useState(true);
-    const [isValidationEnabled, setIsValidationEnabled] = useState(true);
-    const toast = useRef(null);
+	const navigate = useNavigate();
+	const [searchQuery, setSearchQuery] = useState('');
+	const [responseMessage, setResponseMessage] = useState('');
+	const [foundMacAddresses, setFoundMacAddresses] = useState([]);
+	const [inputWidth, setInputWidth] = useState('300px');
+	const [marginLeft, setMarginLeft] = useState('auto');
+	const [isScrollDisabled, setIsScrollDisabled] = useState(true);
+	const [isValidationEnabled, setIsValidationEnabled] = useState(true);
+	const toast = useRef(null);
 
-    const handleLogout = () => {
-        navigate('/');
-    };
+	const handleLogout = () => {
+		navigate('/');
+	};
 
-    const handleStartClick = () => {
-        navigate('/querytool');
-    };
+	const handleStartClick = () => {
+		navigate('/querytool');
+	};
 
-    const showInfo = (message) => {
-        toast.current.clear();//to clear previous message
-        toast.current.show({severity: 'info', summary: 'Info', detail: message, life: 300000});
-    };
+	const showInfo = (message) => {
+		toast.current.clear();//to clear previous message
+		toast.current.show({ severity: 'info', summary: 'Info', detail: message, life: 300000 });
+	};
 
-    const showError = (message) => {
-        toast.current.show({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
-    };
+	const showError = (message) => {
+		toast.current.show({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
+	};
 
-    const isValidMacAddress = (mac) => {
-        const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^[0-9A-Fa-f]{12}$/;
-        return macRegex.test(mac);
-    };
+	const isValidMacAddress = (mac) => {
+		const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^[0-9A-Fa-f]{12}$/;
+		return macRegex.test(mac);
+	};
 
-    const handlePostMac = async () => {
-
-       
-        try {
-            if (searchQuery.trim() === '') {
-                showError('Please enter at least one MAC address.');
-                return;
-            }
-
-            if (searchQuery.split(",").indexOf("") >= 0) {
-                showError('Please, remove extra comma(s) from your search bar!');
-                return;
-            }
-
-            const showSuccess = (message) => {
-                toast.current.show({ severity: 'success', summary: 'Success', detail: message, life: 3000 });
-            };
-
-            const macAddresses = searchQuery.split(',').map(mac => mac.trim());
+	const handlePostMac = async () => {
 
 
-            let invalidMacMessages = [];
+		try {
+			if (searchQuery.trim() === '') {
+				showError('Please enter at least one MAC address.');
+				return;
+			}
+
+			if (searchQuery.split(",").indexOf("") >= 0) {
+				showError('Please, remove extra comma(s) from your search bar!');
+				return;
+			}
+
+			const showSuccess = (message) => {
+				toast.current.show({ severity: 'success', summary: 'Success', detail: message, life: 3000 });
+			};
+
+			const macAddresses = searchQuery.split(',').map(mac => mac.trim());
 
 
-            if (isValidationEnabled) {
-                for (let mac of macAddresses) {
-                    if (!isValidMacAddress(mac)) {
-                        invalidMacMessages.push(`Invalid MAC address format: ${mac}`);
-                        
-                    }
-                }
-
-                if(invalidMacMessages.length > 0){
-                    showInfo(invalidMacMessages.join('\n'));
-                }
-            }
-
-            
+			let invalidMacMessages = [];
 
 
-            const requestBody = {
-                "macAddress": macAddresses, 
-                "isClientFormatRequired": true
-            }
+			if (isValidationEnabled) {
+				for (let mac of macAddresses) {
+					if (!isValidMacAddress(mac)) {
+						invalidMacMessages.push(`Invalid MAC address format: ${mac}`);
 
-            const response = await axios.post('/api/check-mac', requestBody);
+					}
+				}
 
-            if (response.status === 400) {
-                console.log("post response from server > " + response.data.message);
-                showError(response.data.message);
-            } else {
-                const newFoundMacAddresses = response.data.map((response, index) => ({
-                    macAddress: macAddresses[index],
-                    macAddressStatus: response.macAddress,
-                    tables: response.tables || []
-                }));
+				if (invalidMacMessages.length > 0) {
+					showInfo(invalidMacMessages.join('\n'));
+				}
+			}
 
-                setFoundMacAddresses(newFoundMacAddresses);
-                showSuccess('Search completed');
-            }
-        } catch (error) {
-            console.error('Error posting MAC address:', error);
-            showError('Error occurred while checking MAC address.');
-            setFoundMacAddresses([]);
-        }
-    };
 
-    const handleResize = () => {
-        const windowWidth = window.innerWidth;
-        if (windowWidth <= 280) {
-            setInputWidth('-10px');
-            setMarginLeft('10px');
-        } else if (windowWidth <= 1300) {
-            setInputWidth('10px');
-            setMarginLeft('80px');
-        } else {
-            setInputWidth('600px');
-            setMarginLeft('auto');
-        }
-    };
 
-    useEffect(() => {
-        window.addEventListener('resize', handleResize);
-        handleResize();
 
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+			const requestBody = {
+				"macAddress": macAddresses,
+				"isClientFormatRequired": true
+			}
 
-    useEffect(() => {
-        if (isScrollDisabled) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
+			const response = await axios.post('/api/check-mac', requestBody);
 
-        return () => {
-            document.body.style.overflow = 'auto';
-        };
-    }, [isScrollDisabled]);
+			if (response.status === 400) {
+				console.log("post response from server > " + response.data.message);
+				showError(response.data.message);
+			} else {
+				const newFoundMacAddresses = response.data.map((response, index) => ({
+					macAddress: macAddresses[index],
+					macAddressStatus: response.macAddress,
+					tables: response.tables || []
+				}));
 
-    const menu = useRef();
+				setFoundMacAddresses(newFoundMacAddresses);
+				showSuccess('Search completed');
+			}
+		} catch (error) {
+			console.error('Error posting MAC address:', error);
+			showError('Error occurred while checking MAC address.');
+			setFoundMacAddresses([]);
+		}
+	};
 
-    const userProfile = [
-        {
-            template: function setProfile() {
-                return (
-                    <span className='list-group mt-3'>
-                        <p>{icon_username}</p>
-                    </span>
-                );
-            }
-        },
-        {
-            separator: true
-        }
-    ];
+	const handleResize = () => {
+		const windowWidth = window.innerWidth;
+		if (windowWidth <= 280) {
+			setInputWidth('-10px');
+			setMarginLeft('10px');
+		} else if (windowWidth <= 1300) {
+			setInputWidth('10px');
+			setMarginLeft('80px');
+		} else {
+			setInputWidth('600px');
+			setMarginLeft('auto');
+		}
+	};
 
-    const start = (
-        <>
-            <img alt='logo' src={SepioLogo} height='40' className='mr-2' onClick={handleStartClick} />
-        </>
-    );
+	useEffect(() => {
+		window.addEventListener('resize', handleResize);
+		handleResize();
 
-    const end = (
-        <div className='flex align-items-center gap-2'>
-            <NavLink to='/' className='p-button p-component p-button-text  text-decoration-none' style={{ borderRadius: '10px', padding: '10px' }}>
-                <span className='pi pi-sign-out' style={{ marginRight: '5px' }} />
-                Logout
-            </NavLink>
-            <Menu className="font-medium text-xl font-semibold text-center rounded-4 mt-2" model={userProfile} popup ref={menu} id="popup_menu_left" closeOnEscape />
-            <Button
-                style={{ width: '46px', height: '46px', borderRadius: '50%', color: '#183462' }}
-                icon="pi pi-user"
-                rounded
-                text
-                severity="secondary"
-                aria-label="User"
-                className="mr-2"
-                onClick={(event) => menu.current.toggle(event)}
-                aria-controls="popup_menu"
-                aria-haspopup
-            />
-        </div>
-    );
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	}, []);
 
-    return (
-        <div>
-            <Toast ref={toast} />
-            <Menubar start={start} end={end} />
-            <div>
-                <CSidebar className='border-end custom-sidebar' visible={true} style={{ height: '100vh', position: 'sticky', top: '0' }}>
-                    <CSidebarNav>
-                        <CContainer fluid>
-                            <CForm className='d-flex'>
-                                {/* Place for additional form elements after demo */}
-                            </CForm>
-                        </CContainer>
-                        <CNavItem>
-                            <NavLink to='/querytool/mac' className='nav-link'><RiDashboardLine className='nav-icon' /> MAC</NavLink>
-                        </CNavItem>
-                        <CNavItem>
-                            <NavLink to='/querytool/settings' className='nav-link'><RiDashboardLine className='nav-icon' /> Settings </NavLink>
-                        </CNavItem>
-                    </CSidebarNav>
-                </CSidebar>
+	useEffect(() => {
+		if (isScrollDisabled) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = 'auto';
+		}
 
-                <div style={{ display: 'flex', justifyContent: 'center', position: 'fixed', top: '180px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
-                    <InputText
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search MAC"
-                        style={{
-                            width: inputWidth,
-                            minWidth: '200px',
-                            maxWidth: '600px',
-                            transition: 'width 0.3s ease',
-                            borderRadius: '5px 0px 0px 5px'
-                        }}
-                    />
-                    <Button
-                        label='Search'
-                        icon='pi pi-search'
-                        onClick={handlePostMac}
-                        style={{
-                            backgroundColor: '#183462',
-                            borderColor: '#183462',
-                            marginLeft: '0px',
-                            borderRadius: '0 5px 5px 0'
-                        }}
-                    />
-                </div>
+		return () => {
+			document.body.style.overflow = 'auto';
+		};
+	}, [isScrollDisabled]);
 
-                <div style={{ position: 'fixed', top: '110px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 ,  display: 'flex' }}>
-                    {/* <label htmlFor="validationSwitch" style={{ marginRight: '10px', marginTop: '5px' }}>MAC Address Validation:</label> */}
-                    <Typography style = {{marginTop: '5px'}} level = 'title-lg'>Mac Address validation</Typography>
-                    <Switch
-                   
-                    style = {{color: '#12467B'}}
-                    
-                        checked={isValidationEnabled}
-                        onChange={(e) => setIsValidationEnabled(e.target.checked)}
-                        
-                        slotProps={{
-                            track: {
-                                children: (
-                                    <React.Fragment>
-                                        <Typography component="span" level="inherit" sx={{ ml: '10px' }}>
-                                            On
-                                        </Typography>
-                                        <Typography component="span" level="inherit" sx={{ mr: '8px' }}>
-                                            Off
-                                        </Typography>
-                                    </React.Fragment>
-                                ),
-                            },
-                        }}
-                        sx={{
-                            '--Switch-thumbSize': '27px',
-                            '--Switch-trackWidth': '64px',
-                            '--Switch-trackHeight': '31px',
-                        }}
-                    />
-                </div>
+	const [dropDown, setDropDown] = useState(null)
+	const open = Boolean(dropDown);
+	const handleClick = (event) => {
+		setDropDown(event.currentTarget)
+	};
+	const handleClose = () => {
+		setDropDown(null);
+	};
 
-                {responseMessage && (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', color: responseMessage.includes('Please enter') ? 'red' : 'green' }}>
-                        {responseMessage}
-                    </div>
-                )}
+	const start = (
+		<>
+			<img alt='logo' src={SepioLogo} height='40' className='mr-2' onClick={handleStartClick} />
+		</>
+	);
 
-                {foundMacAddresses.length > 0 && (
-                    <div style={{ marginLeft: marginLeft, position: 'fixed', top: '250px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '1200px', paddingTop: '20px', zIndex: 1000 }}>
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            height: '400px',
-                            overflowY: 'auto',
-                            width: '100%',
-                            paddingRight: '10px',
-                        }}>
-                            {foundMacAddresses.map((item, index) => (
-                                <div key={index} style={{ marginBottom: '20px', width: '100%', maxWidth: '800px' }}>
-                                    <h4 style={{ textAlign: 'center' }}>{item.macAddress}</h4>
-                                    <DataTable value={[item]} responsiveLayout="scroll" style={{ marginLeft: marginLeft, width: '100%', minWidth: '800px' }}>
-                                        <Column field="macAddressStatus" header="MAC Address Status" style={{ minWidth: '300px', width: '60%' }} />
-                                        <Column field="tables" header="Found In" body={(rowData) => rowData.tables.join(", ")} style={{ minWidth: '300px', width: '40%' }} />
-                                    </DataTable>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+	const end = (
+		<div className='flex align-items-center gap-2'>
+			<NavLink to='/' className='p-button p-component p-button-text  text-decoration-none' style={{ borderRadius: '10px', padding: '10px' }}>
+				<span className='pi pi-sign-out' style={{ marginRight: '5px' }} />
+				Logout
+			</NavLink>
+			<Menu
+				anchorEl={dropDown}
+				id='account-menu'
+				open={open}
+				onClose={handleClose}
+				onClick={handleClose}
+				PaperProps={{
+					elevation: 5,
+					sx: {
+						width: '120px',
+						textAlign: 'center',
+						borderRadius: '10px',
+						overflow: 'visible',
+						mt: 1,
+						'&::before': {
+							content: '""',
+							display: 'inline-block',
+							position: 'absolute',
+							top: 0,
+							right: 19,
+							width: 10,
+							height: 10,
+							bgcolor: 'background.paper',
+							transform: 'translateY(-50%) rotate(45deg)',
+							zIndex: 0,
+						},
+					},
+				}}
+				transformOrigin={{ horizontal: 'right', vertical: 'right' }}
+				anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+			>
+				<MenuItem sx={{ display: 'flex', justifyContent: 'center' }} title='Profile'>
+					<p style={{ marginBottom: '0px' }}>
+						User: {icon_username}
+					</p>
+				</MenuItem>
+			</Menu>
+
+			<Button
+				style={{ width: '46px', height: '46px', borderRadius: '50%', color: '#183462' }}
+				icon="pi pi-user"
+				rounded
+				text
+				severity="secondary"
+				aria-label="User"
+				className="mr-2"
+				onClick={handleClick}
+				aria-controls={open ? 'account-menu' : undefined}
+				aria-haspopup="true"
+				aria-expanded={open ? 'true' : undefined}
+			/>
+		</div>
+	);
+
+	return (
+		<div>
+			<Toast ref={toast} />
+			<Menubar start={start} end={end} />
+			<div>
+				<CSidebar className='border-end custom-sidebar' visible={true} style={{ height: '100vh', position: 'sticky', top: '0' }}>
+					<CSidebarNav>
+						<CContainer fluid>
+							<CForm className='d-flex'>
+								{/* Place for additional form elements after demo */}
+							</CForm>
+						</CContainer>
+						<CNavItem>
+							<NavLink to='/querytool/mac' className='nav-link'><RiDashboardLine className='nav-icon' /> MAC</NavLink>
+						</CNavItem>
+						<CNavItem>
+							<NavLink to='/querytool/settings' className='nav-link'><RiDashboardLine className='nav-icon' /> Settings </NavLink>
+						</CNavItem>
+					</CSidebarNav>
+				</CSidebar>
+
+				<div style={{ display: 'flex', justifyContent: 'center', position: 'fixed', top: '180px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+					<InputText
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						placeholder="Search MAC"
+						style={{
+							width: inputWidth,
+							minWidth: '200px',
+							maxWidth: '600px',
+							transition: 'width 0.3s ease',
+							borderRadius: '5px 0px 0px 5px'
+						}}
+					/>
+					<Button
+						label='Search'
+						icon='pi pi-search'
+						onClick={handlePostMac}
+						style={{
+							backgroundColor: '#183462',
+							borderColor: '#183462',
+							marginLeft: '0px',
+							borderRadius: '0 5px 5px 0'
+						}}
+					/>
+				</div>
+
+				<div style={{ position: 'fixed', top: '110px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, display: 'flex' }}>
+					{/* <label htmlFor="validationSwitch" style={{ marginRight: '10px', marginTop: '5px' }}>MAC Address Validation:</label> */}
+					<Typography style={{ marginTop: '5px' }} level='title-lg'>Mac Address validation</Typography>
+					<Switch
+
+						style={{ color: '#12467B' }}
+
+						checked={isValidationEnabled}
+						onChange={(e) => setIsValidationEnabled(e.target.checked)}
+
+						slotProps={{
+							track: {
+								children: (
+									<React.Fragment>
+										<Typography component="span" level="inherit" sx={{ ml: '10px' }}>
+											On
+										</Typography>
+										<Typography component="span" level="inherit" sx={{ mr: '8px' }}>
+											Off
+										</Typography>
+									</React.Fragment>
+								),
+							},
+						}}
+						sx={{
+							'--Switch-thumbSize': '27px',
+							'--Switch-trackWidth': '64px',
+							'--Switch-trackHeight': '31px',
+						}}
+					/>
+				</div>
+
+				{responseMessage && (
+					<div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', color: responseMessage.includes('Please enter') ? 'red' : 'green' }}>
+						{responseMessage}
+					</div>
+				)}
+
+				{foundMacAddresses.length > 0 && (
+					<div style={{ marginLeft: marginLeft, position: 'fixed', top: '250px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '1200px', paddingTop: '20px', zIndex: 1000 }}>
+						<div style={{
+							display: 'flex',
+							flexDirection: 'column',
+							alignItems: 'center',
+							height: '400px',
+							overflowY: 'auto',
+							width: '100%',
+							paddingRight: '10px',
+						}}>
+							{foundMacAddresses.map((item, index) => (
+								<div key={index} style={{ marginBottom: '20px', width: '100%', maxWidth: '800px' }}>
+									<h4 style={{ textAlign: 'center' }}>{item.macAddress}</h4>
+									<DataTable value={[item]} responsiveLayout="scroll" style={{ marginLeft: marginLeft, width: '100%', minWidth: '800px' }}>
+										<Column field="macAddressStatus" header="MAC Address Status" style={{ minWidth: '300px', width: '60%' }} />
+										<Column field="tables" header="Found In" body={(rowData) => rowData.tables.join(", ")} style={{ minWidth: '300px', width: '40%' }} />
+									</DataTable>
+								</div>
+							))}
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }
 
 
